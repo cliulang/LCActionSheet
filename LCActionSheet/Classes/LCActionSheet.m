@@ -4,7 +4,7 @@
 //
 //  Created by Leo on 2015/4/27.
 //
-//  Copyright (c) 2015-2019 Leo <leodaxia@gmail.com>
+//  Copyright (c) 2015-2018 Leo <leodaxia@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -52,6 +52,8 @@
 @property (nonatomic, weak) UIView *lineView;
 
 @property (nullable, nonatomic, strong) UIWindow *window;
+
+@property (nonatomic, strong) NSMutableArray* indexArray;
 
 @end
 
@@ -260,36 +262,35 @@
 }
 
 - (instancetype)config:(LCActionSheetConfig *)config {
-    _title                           = config.title;
-    _cancelButtonTitle               = config.cancelButtonTitle;
-    _destructiveButtonIndexSet       = config.destructiveButtonIndexSet;
-    _destructiveButtonColor          = config.destructiveButtonColor;
-    _titleColor                      = config.titleColor;
-    _buttonColor                     = config.buttonColor;
-    _titleFont                       = config.titleFont;
-    _buttonFont                      = config.buttonFont;
-    _buttonHeight                    = config.buttonHeight;
-    _scrolling                       = config.canScrolling;
-    _visibleButtonCount              = config.visibleButtonCount;
-    _animationDuration               = config.animationDuration;
-    _darkOpacity                     = config.darkOpacity;
-    _darkViewNoTaped                 = config.darkViewNoTaped;
-    _unBlur                          = config.unBlur;
-    _blurEffectStyle                 = config.blurEffectStyle;
-    _titleEdgeInsets                 = config.titleEdgeInsets;
-//    _actionSheetEdgeInsets           = config.actionSheetEdgeInsets;
-    _separatorColor                  = config.separatorColor;
-    _blurBackgroundColor             = config.blurBackgroundColor;
-    _autoHideWhenDeviceRotated       = config.autoHideWhenDeviceRotated;
-    _disableAutoDismissAfterClicking = config.disableAutoDismissAfterClicking;
-    _numberOfTitleLines              = config.numberOfTitleLines;
+    _title                     = config.title;
+    _cancelButtonTitle         = config.cancelButtonTitle;
+    _destructiveButtonIndexSet = config.destructiveButtonIndexSet;
+    _destructiveButtonColor    = config.destructiveButtonColor;
+    _titleColor                = config.titleColor;
+    _buttonColor               = config.buttonColor;
+    _titleFont                 = config.titleFont;
+    _buttonFont                = config.buttonFont;
+    _buttonHeight              = config.buttonHeight;
+    _scrolling                 = config.canScrolling;
+    _visibleButtonCount        = config.visibleButtonCount;
+    _animationDuration         = config.animationDuration;
+    _darkOpacity               = config.darkOpacity;
+    _darkViewNoTaped           = config.darkViewNoTaped;
+    _unBlur                    = config.unBlur;
+    _blurEffectStyle           = config.blurEffectStyle;
+    _titleEdgeInsets           = config.titleEdgeInsets;
+//    _actionSheetEdgeInsets     = config.actionSheetEdgeInsets;
+    _separatorColor            = config.separatorColor;
+    _blurBackgroundColor       = config.blurBackgroundColor;
+    _autoHideWhenDeviceRotated = config.autoHideWhenDeviceRotated;
+    _numberOfTitleLines        = config.numberOfTitleLines;
 
-    _buttonEdgeInsets                = config.buttonEdgeInsets;
-    _destructiveButtonBgColor        = config.destructiveButtonBgColor;
-    _cancelButtonColor               = config.cancelButtonColor;
-    _cancelButtonBgColor             = config.cancelButtonBgColor;
-    _buttonBgColor                   = config.buttonBgColor;
-    _buttonCornerRadius              = config.buttonCornerRadius;
+    _buttonEdgeInsets          = config.buttonEdgeInsets;
+    _destructiveButtonBgColor  = config.destructiveButtonBgColor;
+    _cancelButtonColor         = config.cancelButtonColor;
+    _cancelButtonBgColor       = config.cancelButtonBgColor;
+    _buttonBgColor             = config.buttonBgColor;
+    _buttonCornerRadius        = config.buttonCornerRadius;
 
     return self;
 }
@@ -441,6 +442,32 @@
     }
     
     self.otherButtonTitles = [self.otherButtonTitles arrayByAddingObjectsFromArray:tempButtonTitles];
+    
+    [self.tableView reloadData];
+    [self updateBottomView];
+    [self updateTableView];
+}
+
+- (void)appendButtonWithTitle:(NSString *)title ForIndex:(NSInteger)index{
+
+    
+    NSMutableArray<NSString *> *arrayM = [NSMutableArray arrayWithArray:self.otherButtonTitles];
+    
+    if (self.indexArray == nil) {
+        //只有使用此方法才会触发index函数
+        self.indexArray = [NSMutableArray array];
+        [self.otherButtonTitles enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            [self.indexArray addObject:@(idx+1)];
+        }];
+    }
+    
+//#ifdef DEBUG
+//    NSAssert([self.indexArray containsObject:@(index)], @"Repeat containing");
+//#endif
+    [arrayM addObject:title];
+    [self.indexArray addObject:@(index)];
+    
+    self.otherButtonTitles = [NSArray arrayWithArray:arrayM];
     
     [self.tableView reloadData];
     [self updateBottomView];
@@ -691,28 +718,12 @@
 
 - (NSString *)buttonTitleAtIndex:(NSInteger)index {
     NSString *buttonTitle = nil;
-    if (index == self.cancelButtonIndex) {
+    if (index == 0) {
         buttonTitle = self.cancelButtonTitle;
     } else {
         buttonTitle = self.otherButtonTitles[index - 1];
     }
     return buttonTitle;
-}
-
-- (void)setButtonTitle:(NSString *)title atIndex:(NSInteger)index {
-    if (index < 0 || index - 1 >= self.otherButtonTitles.count) {
-        return;
-    }
-    if (index == self.cancelButtonIndex) {
-        self.cancelButtonTitle = title;
-    } else {
-        NSMutableArray<NSString *> *arrayM = self.otherButtonTitles.mutableCopy;
-        arrayM[index - 1] = title;
-        self.otherButtonTitles = arrayM.copy;
-        [self.tableView reloadData];
-        [self updateBottomView];
-        [self updateTableView];
-    }
 }
 
 #pragma mark - Update Views
@@ -861,6 +872,7 @@
         
         if (strongSelf.didDismissHandler) {
             strongSelf.didDismissHandler(strongSelf, buttonIndex);
+            
         }
     }];
 }
@@ -897,12 +909,18 @@
     }
     
     if (self.clickedHandler) {
-        self.clickedHandler(self, indexPath.row + 1);
+        if (self.indexArray.count > 0) {
+            self.clickedHandler(self, [[self.indexArray objectAtIndex:indexPath.row] integerValue]);
+        }else {
+            self.clickedHandler(self, indexPath.row + 1);
+        }
     }
-
-  if (!self.disableAutoDismissAfterClicking) {
-    [self hideWithButtonIndex:indexPath.row + 1];
-  }
+    if (self.indexArray.count > 0) {
+        [self hideWithButtonIndex:[[self.indexArray objectAtIndex:indexPath.row] integerValue]];
+    }else{
+        [self hideWithButtonIndex:indexPath.row + 1];
+    }
+    
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {

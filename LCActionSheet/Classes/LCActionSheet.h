@@ -4,7 +4,7 @@
 //
 //  Created by Leo on 2015/4/27.
 //
-//  Copyright (c) 2015-2019 Leo <leodaxia@gmail.com>
+//  Copyright (c) 2015-2018 Leo <leodaxia@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -247,11 +247,6 @@ typedef void(^LCActionSheetDidDismissHandler)(LCActionSheet *actionSheet, NSInte
  */
 @property (nonatomic, assign) BOOL autoHideWhenDeviceRotated;
 
-/**
- Disable auto dismiss after clicking. Default is NO, will auto dismiss.
- */
-@property (nonatomic, assign) BOOL disableAutoDismissAfterClicking;
-
 
 /**
  LCActionSheet clicked handler.
@@ -468,6 +463,15 @@ typedef void(^LCActionSheetDidDismissHandler)(LCActionSheet *actionSheet, NSInte
 #pragma mark Append & Show
 
 /**
+ Append button for index with title.
+ 
+ @param title title
+ @param index index
+ */
+
+- (void)appendButtonWithTitle:(NSString *)title ForIndex:(NSInteger)index;
+
+/**
  Append buttons with titles.
  
  @param titles titles
@@ -496,21 +500,14 @@ typedef void(^LCActionSheetDidDismissHandler)(LCActionSheet *actionSheet, NSInte
 - (void)show;
 
 /**
- Get button title with index.
+ Get button title with index
  
  @param index index
  @return button title
  */
-- (nullable NSString *)buttonTitleAtIndex:(NSInteger)index;
-
-/**
- Set button title with index.
-
- @param title title
- @param index index
- */
-- (void)setButtonTitle:(nullable NSString *)title atIndex:(NSInteger)index;
+- (NSString *)buttonTitleAtIndex:(NSInteger)index;
 
 @end
 
 NS_ASSUME_NONNULL_END
+
